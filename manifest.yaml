@@ -1,0 +1,209 @@
+# ==============================================================================
+# Garbageman Nodes Manager - StartOS Service Manifest
+# ==============================================================================
+# Version: 0.3.5.x
+# Documentation: https://docs.start9.com/0.3.5.x/developer-docs/specification/manifest.html
+
+id: garbageman-nm
+title: "Garbageman Nodes Manager"
+version: 0.1.0.1
+release-notes: |
+  Initial StartOS release of Garbageman Nodes Manager (x86_64 only)
+  
+  Features:
+  - Modern web-based control plane for managing multiple Bitcoin nodes
+  - Support for Garbageman and Bitcoin Knots implementations
+  - Real-time monitoring: block height, peer counts, sync progress
+  - Peer discovery via DNS seeds and Tor
+  - Libre Relay node detection and tracking
+  - Artifact management: import pre-built binaries and pre-synced blockchains
+  - Instance management: create, start, stop, monitor multiple daemon instances
+  - Dark neon war room aesthetic UI
+  
+  Platform Support:
+  - x86_64 (Intel/AMD 64-bit) fully supported
+  - ARM64 support planned for future release (pending upstream artifacts)
+  
+  Requirements:
+  - Minimum: 8 GB RAM, 4 CPU cores, 100 GB disk space
+  - Each Bitcoin daemon instance requires ~10 GB RAM + 500 GB disk
+  - Recommended: Server hardware with 32GB+ RAM for multiple instances
+
+license: MIT
+wrapper-repo: "https://github.com/paulscode/garbageman-nm-startos"
+upstream-repo: "https://github.com/paulscode/garbageman-nm"
+support-site: "https://github.com/paulscode/garbageman-nm/issues"
+marketing-site: "https://github.com/paulscode/garbageman-nm"
+build: ["make"]
+min-os-version: 0.3.5
+
+description:
+  short: Modern web-based control plane for managing multiple Bitcoin nodes
+  long: |
+    Garbageman Nodes Manager provides a modern, containerized web application for managing 
+    multiple Bitcoin daemon instances (Garbageman or Bitcoin Knots). 
+    
+    Features a dark neon war room aesthetic with real-time monitoring of block height, 
+    peer counts, sync progress, and resource usage. Includes peer discovery via clearnet 
+    DNS seeds and Tor hidden services, with automatic Libre Relay detection.
+    
+    Artifact management allows importing pre-built binaries and pre-synced blockchain data 
+    from GitHub releases, dramatically reducing initial sync time. Each daemon instance 
+    can be configured independently for mainnet, testnet, signet, or regtest.
+    
+    Built with TypeScript end-to-end: Fastify backend API, Next.js frontend, and multi-daemon 
+    supervisor for process orchestration.
+    
+    Privacy-first design with Tor integration and each node getting its own hidden service.
+
+assets:
+  license: LICENSE
+  icon: icon.png
+  instructions: instructions.md
+
+main:
+  type: docker
+  image: main
+  entrypoint: "docker_entrypoint.sh"
+  args: []
+  mounts:
+    main: /root
+  gpu-acceleration: false
+
+hardware-requirements:
+  arch:
+    - x86_64
+
+health-checks:
+  web-ui:
+    name: Web Interface
+    success-message: The Garbageman UI is accessible and responding
+    type: docker
+    image: main
+    system: false
+    entrypoint: curl
+    args:
+      - "-f"
+      - "http://localhost:5173/"
+    inject: true
+    io-format: json
+
+config:
+  get:
+    type: script
+  set:
+    type: script
+
+properties:
+  type: script
+  args: []
+
+volumes:
+  main:
+    type: data
+  compat:
+    type: assets
+
+interfaces:
+  main:
+    name: Web Interface
+    description: |
+      Garbageman Nodes Manager web UI for managing Bitcoin daemon instances.
+      Access the dashboard to create, monitor, and control your Bitcoin nodes.
+    tor-config:
+      port-mapping:
+        80: "5173"
+    lan-config:
+      443:
+        ssl: true
+        internal: 5173
+    ui: true
+    protocols:
+      - tcp
+      - http
+
+dependencies: {}
+
+backup:
+  create:
+    type: docker
+    image: compat
+    system: true
+    entrypoint: compat
+    args:
+      - duplicity
+      - create
+      - /mnt/backup
+      - /root
+    mounts:
+      BACKUP: /mnt/backup
+      main: /root
+  restore:
+    type: docker
+    image: compat
+    system: true
+    entrypoint: compat
+    args:
+      - duplicity
+      - restore
+      - /mnt/backup
+      - /root
+    mounts:
+      BACKUP: /mnt/backup
+      main: /root
+
+alerts:
+  install-alert: |
+    Welcome to Garbageman Nodes Manager!
+    
+    IMPORTANT: This service requires significant resources:
+    - Minimum: 8 GB RAM, 4 CPU cores, 100 GB disk
+    - Each Bitcoin daemon: ~10 GB RAM + 500 GB disk
+    
+    After installation:
+    1. Configure your preferences in the Config menu
+    2. Launch the UI and import an artifact (pre-built binary)
+    3. Create your first Bitcoin node instance
+    4. Monitor sync progress in real-time
+    
+    For best performance on embedded devices, limit to 2-3 instances.
+    
+    See Instructions for detailed setup guide.
+  uninstall-alert: |
+    Uninstalling Garbageman Nodes Manager will:
+    - Stop all running Bitcoin daemon instances
+    - Remove all blockchain data (cannot be recovered)
+    - Remove all instance configurations
+    - Remove all imported artifacts
+    
+    Make sure you have backed up any important wallet files or data before proceeding.
+  restore-alert: |
+    Restoring from backup will:
+    - Restore instance configurations
+    - Restore blockchain data (if backed up)
+    - Restore imported artifacts (if backed up)
+    
+    Note: Full blockchain backups may be very large (500+ GB). 
+    Consider selective backup/restore strategies.
+  start-alert: |
+    Starting Garbageman Nodes Manager...
+    
+    Services starting:
+    - API Server (port 8080)
+    - Web UI (port 5173)  
+    - Multi-Daemon Supervisor (port 9000)
+    
+    The UI will be accessible via Tor and LAN (if configured) once the health check passes.
+    Initial startup may take 30-60 seconds.
+
+actions: {}
+
+migrations:
+  from:
+    "*":
+      type: script
+      args: ["from"]
+  to:
+    "*":
+      type: script
+      args: ["to"]

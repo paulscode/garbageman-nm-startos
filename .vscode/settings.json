@@ -1,0 +1,12 @@
+{
+  "deno.enable": true,
+  "deno.enablePaths": [
+    "scripts"
+  ],
+  "deno.lint": true,
+  "deno.unstable": false,
+  "deno.config": "./scripts/deno.json",
+  "files.associations": {
+    "**/scripts/**/*.ts": "typescript"
+  }
+}

@@ -1,0 +1,45 @@
+# ==============================================================================
+# Garbageman StartOS Wrapper - Git Ignore
+# ==============================================================================
+
+# Build artifacts
+*.s9pk
+docker-images/
+image.tar
+*.tar
+*.tar.gz
+
+# Generated scripts
+scripts/*.js
+scripts/**/*.js
+
+# Temporary build context (copied during build, removed after)
+garbageman-nm/
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.DS_Store
+.idea/
+*.swp
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Start9 CLI config (contains sensitive auth info)
+.embassy/
+
+# Deno cache (local development only)
+.deno/
+deno.lock
+
+#AI assistant instructions for the workspace
+.github/workflows/copilot-instructions.md
