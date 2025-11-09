@@ -6,28 +6,17 @@
 
 id: garbageman-nm
 title: "Garbageman Nodes Manager"
-version: 0.1.0.1
+version: 0.1.1.0
 release-notes: |
-  Initial StartOS release of Garbageman Nodes Manager (x86_64 only)
+  Bug fix release - fixes instance startup failures
   
-  Features:
-  - Modern web-based control plane for managing multiple Bitcoin nodes
-  - Support for Garbageman and Bitcoin Knots implementations
-  - Real-time monitoring: block height, peer counts, sync progress
-  - Peer discovery via DNS seeds and Tor
-  - Libre Relay node detection and tracking
-  - Artifact management: import pre-built binaries and pre-synced blockchains
-  - Instance management: create, start, stop, monitor multiple daemon instances
-  - Dark neon war room aesthetic UI
+  Fixed:
+  - Instances now properly track and use the correct artifact version tag
+  - Removed hardcoded artifact fallback that caused "Binary not found" errors
+  - Improved error messages when artifact binaries are missing
   
-  Platform Support:
-  - x86_64 (Intel/AMD 64-bit) fully supported
-  - ARM64 support planned for future release (pending upstream artifacts)
-  
-  Requirements:
-  - Minimum: 8 GB RAM, 4 CPU cores, 100 GB disk space
-  - Each Bitcoin daemon instance requires ~10 GB RAM + 500 GB disk
-  - Recommended: Server hardware with 32GB+ RAM for multiple instances
+  This hotfix resolves an issue where instances would fail to start after
+  importing artifacts with version tags different from the initial release.
 
 license: MIT
 wrapper-repo: "https://github.com/paulscode/garbageman-nm-startos"
