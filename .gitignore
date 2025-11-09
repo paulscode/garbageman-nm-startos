@@ -9,6 +9,10 @@ image.tar
 *.tar
 *.tar.gz
 
+#Release artifacts
+SHA256SUMS.txt
+*.asc
+
 # Generated scripts
 scripts/*.js
 scripts/**/*.js
