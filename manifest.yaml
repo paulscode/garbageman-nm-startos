@@ -6,20 +6,25 @@
 
 id: garbageman-nm
 title: "Garbageman Nodes Manager"
-version: 0.2.1.0
+version: 0.2.2.0
 release-notes: |
-  Major update with unified Docker infrastructure and UI improvements
+  Multi-architecture support and stability improvements
   
   New features:
-  - Session persistence with 24-hour JWT tokens
-  - Loading screen during session validation
-  - Enforced password change from default "garbageman" password
-  - Improved P2P port labels in node cards
+  - aarch64 (ARM64) architecture support for Raspberry Pi 5
+  - Architecture detection and validation for imported artifacts
+  - Architecture badges in UI showing compatibility warnings
+  - System architecture display in artifact import modal
+  
+  Bug fixes:
+  - Fixed session token persistence across container restarts
+  - Fixed blockchain snapshot option defaulting incorrectly
+  - Fixed API requests when accessing UI remotely (via hostname)
   
   Infrastructure:
-  - Unified Docker build system across all deployment targets
-  - Automatic wrapper detection (StartOS, Umbrel, Standalone)
-  - Consolidated supervisord configurations
+  - Multi-architecture Docker images (x86_64 and aarch64)
+  - Architecture-aware binary imports from GitHub releases
+  - Improved authentication token handling
 
 license: MIT
 wrapper-repo: "https://github.com/paulscode/garbageman-nm-startos"
@@ -65,6 +70,7 @@ main:
 hardware-requirements:
   arch:
     - x86_64
+    - aarch64
 
 health-checks:
   web-ui:

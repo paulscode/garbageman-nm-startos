@@ -2,7 +2,7 @@
 # Garbageman Nodes Manager - StartOS Build Makefile
 # ==============================================================================
 # Builds .s9pk package for StartOS 0.3.5.x
-# Target architecture: x86_64 (amd64) only - ARM support coming in future release
+# Target architectures: x86_64 (amd64) and aarch64 (arm64)
 
 PKG_ID := $(shell yq -r '.id' manifest.yaml 2>/dev/null || echo "garbageman-nm")
 PKG_VERSION := $(shell yq -r '.version' manifest.yaml 2>/dev/null || echo "0.1.0.1")
@@ -95,18 +95,10 @@ check-prereqs:
 # Build Docker Images
 # ==============================================================================
 
-# Build x86_64 Docker image
-docker-images/x86_64.tar: check-prereqs Dockerfile docker_entrypoint.sh supervisord.conf manifest.yaml
-	@echo ""
-	@echo "=========================================================================="
-	@echo "Building Docker image for x86_64..."
-	@echo "=========================================================================="
-	@echo ""
-	@echo "This will:"
-	@echo "  1. Clone Garbageman source into build context"
-	@echo "  2. Build multi-stage Docker image"
-	@echo "  3. Create x86_64 image tar"
-	@echo ""
+# Prepare build context (shared by both architectures)
+.PHONY: prepare-build-context
+prepare-build-context:
+	@echo "Preparing build context..."
 	@rm -rf garbageman-nm webui multi-daemon docker-images-copy seeds envfiles
 	@mkdir -p docker-images
 	@echo "Copying Garbageman source..."
@@ -115,8 +107,14 @@ docker-images/x86_64.tar: check-prereqs Dockerfile docker_entrypoint.sh supervis
 	@cp -r $(GARBAGEMAN_SRC)/docker-images ./docker-images-copy
 	@cp -r $(GARBAGEMAN_SRC)/seeds ./seeds
 	@cp -r $(GARBAGEMAN_SRC)/envfiles ./envfiles
+
+# Build x86_64 Docker image
+docker-images/x86_64.tar: check-prereqs Dockerfile docker_entrypoint.sh supervisord.conf manifest.yaml prepare-build-context
 	@echo ""
-	@echo "Building x86_64 image with WRAPPER_TYPE=startos..."
+	@echo "=========================================================================="
+	@echo "Building Docker image for x86_64..."
+	@echo "=========================================================================="
+	@echo ""
 	@docker buildx build \
 		--tag start9/$(PKG_ID)/main:$(PKG_VERSION) \
 		--platform=linux/amd64 \
@@ -124,17 +122,40 @@ docker-images/x86_64.tar: check-prereqs Dockerfile docker_entrypoint.sh supervis
 		--build-arg VERSION=$(PKG_VERSION) \
 		--output type=docker,dest=docker-images/x86_64.tar \
 		.
+	@echo ""
+	@echo "✓ x86_64 Docker image built successfully"
+	@echo "  Size: $(shell du -h docker-images/x86_64.tar 2>/dev/null | cut -f1 || echo 'N/A')"
+	@echo ""
+
+# Build aarch64 Docker image
+docker-images/aarch64.tar: check-prereqs Dockerfile docker_entrypoint.sh supervisord.conf manifest.yaml prepare-build-context
+	@echo ""
+	@echo "=========================================================================="
+	@echo "Building Docker image for aarch64..."
+	@echo "=========================================================================="
+	@echo ""
+	@docker buildx build \
+		--tag start9/$(PKG_ID)/main:$(PKG_VERSION) \
+		--platform=linux/arm64 \
+		--build-arg WRAPPER_TYPE=startos \
+		--build-arg VERSION=$(PKG_VERSION) \
+		--output type=docker,dest=docker-images/aarch64.tar \
+		.
+	@echo ""
+	@echo "✓ aarch64 Docker image built successfully"
+	@echo "  Size: $(shell du -h docker-images/aarch64.tar 2>/dev/null | cut -f1 || echo 'N/A')"
+	@echo ""
+
+# Clean build context after building both images
+.PHONY: clean-build-context
+clean-build-context:
 	@rm -rf webui multi-daemon docker-images-copy seeds envfiles
-	@echo ""
-	@echo "✓ Docker image built successfully"
-	@echo "  x86_64:  docker-images/x86_64.tar ($(shell du -h docker-images/x86_64.tar 2>/dev/null | cut -f1 || echo 'N/A'))"
-	@echo ""
 
 # ==============================================================================
 # Package .s9pk
 # ==============================================================================
 
-$(PKG_ID).s9pk: manifest.yaml instructions.md icon.png LICENSE docker-images/x86_64.tar assets/compat/config_spec.yaml scripts/embassy.js
+$(PKG_ID).s9pk: manifest.yaml instructions.md icon.png LICENSE docker-images/x86_64.tar docker-images/aarch64.tar assets/compat/config_spec.yaml scripts/embassy.js
 	@echo ""
 	@echo "=========================================================================="
 	@echo "Packaging $(PKG_ID).s9pk..."
@@ -142,9 +163,10 @@ $(PKG_ID).s9pk: manifest.yaml instructions.md icon.png LICENSE docker-images/x86
 	@echo ""
 	@echo "Package ID:      $(PKG_ID)"
 	@echo "Version:         $(PKG_VERSION)"
-	@echo "Architecture:    x86_64 only"
+	@echo "Architectures:   x86_64, aarch64"
 	@echo ""
 	@start-sdk pack
+	@$(MAKE) clean-build-context
 	@echo ""
 	@echo "✓ Package created successfully: $(PKG_ID).s9pk"
 	@echo ""
@@ -154,7 +176,7 @@ $(PKG_ID).s9pk: manifest.yaml instructions.md icon.png LICENSE docker-images/x86
 # ==============================================================================
 
 quick: $(PKG_ID).s9pk
-	@echo "✓ Build complete: $(PKG_ID).s9pk (x86_64)"
+	@echo "✓ Build complete: $(PKG_ID).s9pk (x86_64 + aarch64)"
 
 # ==============================================================================
 # Development Helpers
@@ -166,14 +188,14 @@ info:
 	@echo "  ID:         $(PKG_ID)"
 	@echo "  Version:    $(PKG_VERSION)"
 	@echo "  Source:     $(GARBAGEMAN_SRC)"
-	@echo "  Platform:   x86_64 only (ARM support in future release)"
+	@echo "  Platforms:  x86_64 (amd64), aarch64 (arm64)"
 	@echo ""
 	@echo "Targets:"
-	@echo "  make         - Build and verify package (x86_64)"
+	@echo "  make         - Build and verify package (both architectures)"
 	@echo "  make verify  - Verify package integrity"
 	@echo "  make install - Install to StartOS (requires start-cli config)"
 	@echo "  make clean   - Remove build artifacts"
 	@echo "  make info    - Show this help"
 	@echo ""
 
-.PHONY: all verify install clean check-prereqs quick info
+.PHONY: all verify install clean check-prereqs quick info prepare-build-context clean-build-context
