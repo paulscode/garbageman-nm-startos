@@ -99,7 +99,7 @@ check-prereqs:
 .PHONY: prepare-build-context
 prepare-build-context:
 	@echo "Preparing build context..."
-	@rm -rf garbageman-nm webui multi-daemon docker-images-copy seeds envfiles
+	@rm -rf garbageman-nm webui multi-daemon docker-images-copy seeds envfiles docker_entrypoint.sh supervisord.conf
 	@mkdir -p docker-images
 	@echo "Copying Garbageman source..."
 	@cp -r $(GARBAGEMAN_SRC)/webui ./webui
@@ -107,9 +107,13 @@ prepare-build-context:
 	@cp -r $(GARBAGEMAN_SRC)/docker-images ./docker-images-copy
 	@cp -r $(GARBAGEMAN_SRC)/seeds ./seeds
 	@cp -r $(GARBAGEMAN_SRC)/envfiles ./envfiles
+	@echo "Copying wrapper-specific files..."
+	@cp $(GARBAGEMAN_SRC)/docker-images/docker-entrypoint.sh ./docker_entrypoint.sh
+	@cp $(GARBAGEMAN_SRC)/docker-images/supervisord.startos.conf ./supervisord.conf
 
 # Build x86_64 Docker image
-docker-images/x86_64.tar: check-prereqs Dockerfile docker_entrypoint.sh supervisord.conf manifest.yaml prepare-build-context
+docker-images/x86_64.tar: check-prereqs Dockerfile manifest.yaml
+	@$(MAKE) prepare-build-context
 	@echo ""
 	@echo "=========================================================================="
 	@echo "Building Docker image for x86_64..."
@@ -128,7 +132,8 @@ docker-images/x86_64.tar: check-prereqs Dockerfile docker_entrypoint.sh supervis
 	@echo ""
 
 # Build aarch64 Docker image
-docker-images/aarch64.tar: check-prereqs Dockerfile docker_entrypoint.sh supervisord.conf manifest.yaml prepare-build-context
+docker-images/aarch64.tar: check-prereqs Dockerfile manifest.yaml
+	@$(MAKE) prepare-build-context
 	@echo ""
 	@echo "=========================================================================="
 	@echo "Building Docker image for aarch64..."
@@ -149,7 +154,7 @@ docker-images/aarch64.tar: check-prereqs Dockerfile docker_entrypoint.sh supervi
 # Clean build context after building both images
 .PHONY: clean-build-context
 clean-build-context:
-	@rm -rf webui multi-daemon docker-images-copy seeds envfiles
+	@rm -rf webui multi-daemon docker-images-copy seeds envfiles docker_entrypoint.sh supervisord.conf
 
 # ==============================================================================
 # Package .s9pk
