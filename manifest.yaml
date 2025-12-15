@@ -6,17 +6,20 @@
 
 id: garbageman-nm
 title: "Garbageman Nodes Manager"
-version: 0.1.1.0
+version: 0.2.1.0
 release-notes: |
-  Bug fix release - fixes instance startup failures
+  Major update with unified Docker infrastructure and UI improvements
   
-  Fixed:
-  - Instances now properly track and use the correct artifact version tag
-  - Removed hardcoded artifact fallback that caused "Binary not found" errors
-  - Improved error messages when artifact binaries are missing
+  New features:
+  - Session persistence with 24-hour JWT tokens
+  - Loading screen during session validation
+  - Enforced password change from default "garbageman" password
+  - Improved P2P port labels in node cards
   
-  This hotfix resolves an issue where instances would fail to start after
-  importing artifacts with version tags different from the initial release.
+  Infrastructure:
+  - Unified Docker build system across all deployment targets
+  - Automatic wrapper detection (StartOS, Umbrel, Standalone)
+  - Consolidated supervisord configurations
 
 license: MIT
 wrapper-repo: "https://github.com/paulscode/garbageman-nm-startos"
@@ -53,7 +56,7 @@ assets:
 main:
   type: docker
   image: main
-  entrypoint: "docker_entrypoint.sh"
+  entrypoint: "/usr/local/bin/docker-entrypoint.sh"
   args: []
   mounts:
     main: /root
@@ -73,7 +76,7 @@ health-checks:
     entrypoint: curl
     args:
       - "-f"
-      - "http://localhost:5173/"
+      - "http://localhost:3000/"
     inject: true
     io-format: json
 
@@ -101,11 +104,11 @@ interfaces:
       Access the dashboard to create, monitor, and control your Bitcoin nodes.
     tor-config:
       port-mapping:
-        80: "5173"
+        80: "3000"
     lan-config:
       443:
         ssl: true
-        internal: 5173
+        internal: 3000
     ui: true
     protocols:
       - tcp
@@ -179,7 +182,7 @@ alerts:
     
     Services starting:
     - API Server (port 8080)
-    - Web UI (port 5173)  
+    - Web UI (port 3000)  
     - Multi-Daemon Supervisor (port 9000)
     
     The UI will be accessible via Tor and LAN (if configured) once the health check passes.

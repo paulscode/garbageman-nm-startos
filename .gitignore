@@ -19,6 +19,12 @@ scripts/**/*.js
 
 # Temporary build context (copied during build, removed after)
 garbageman-nm/
+webui/
+multi-daemon/
+docker-images-copy/
+docker-images-src/
+seeds/
+envfiles/
 
 # Logs
 *.log

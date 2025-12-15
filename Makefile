@@ -4,8 +4,8 @@
 # Builds .s9pk package for StartOS 0.3.5.x
 # Target architecture: x86_64 (amd64) only - ARM support coming in future release
 
-PKG_ID := $(shell yq e ".id" manifest.yaml 2>/dev/null || echo "garbageman-nm")
-PKG_VERSION := $(shell yq e ".version" manifest.yaml 2>/dev/null || echo "0.1.0.1")
+PKG_ID := $(shell yq -r '.id' manifest.yaml 2>/dev/null || echo "garbageman-nm")
+PKG_VERSION := $(shell yq -r '.version' manifest.yaml 2>/dev/null || echo "0.1.0.1")
 TS_FILES := $(shell find ./scripts -name "*.ts" 2>/dev/null || echo "")
 
 # Upstream Garbageman source directory (sibling to this wrapper)
@@ -107,18 +107,24 @@ docker-images/x86_64.tar: check-prereqs Dockerfile docker_entrypoint.sh supervis
 	@echo "  2. Build multi-stage Docker image"
 	@echo "  3. Create x86_64 image tar"
 	@echo ""
+	@rm -rf garbageman-nm webui multi-daemon docker-images-copy seeds envfiles
 	@mkdir -p docker-images
-	@rm -rf garbageman-nm
 	@echo "Copying Garbageman source..."
-	@cp -r $(GARBAGEMAN_SRC) ./garbageman-nm
+	@cp -r $(GARBAGEMAN_SRC)/webui ./webui
+	@cp -r $(GARBAGEMAN_SRC)/multi-daemon ./multi-daemon
+	@cp -r $(GARBAGEMAN_SRC)/docker-images ./docker-images-copy
+	@cp -r $(GARBAGEMAN_SRC)/seeds ./seeds
+	@cp -r $(GARBAGEMAN_SRC)/envfiles ./envfiles
 	@echo ""
-	@echo "Building x86_64 image..."
+	@echo "Building x86_64 image with WRAPPER_TYPE=startos..."
 	@docker buildx build \
 		--tag start9/$(PKG_ID)/main:$(PKG_VERSION) \
 		--platform=linux/amd64 \
+		--build-arg WRAPPER_TYPE=startos \
+		--build-arg VERSION=$(PKG_VERSION) \
 		--output type=docker,dest=docker-images/x86_64.tar \
 		.
-	@rm -rf garbageman-nm
+	@rm -rf webui multi-daemon docker-images-copy seeds envfiles
 	@echo ""
 	@echo "✓ Docker image built successfully"
 	@echo "  x86_64:  docker-images/x86_64.tar ($(shell du -h docker-images/x86_64.tar 2>/dev/null | cut -f1 || echo 'N/A'))"

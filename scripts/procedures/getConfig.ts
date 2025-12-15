@@ -34,7 +34,7 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     nullable: false,
     range: "[1024,65535]",
     integral: true,
-    default: 5173,
+    default: 3000,
     warning: "This is the internal port. External access is via Tor hidden service on port 80. Changing this requires a service restart.",
   },
   "supervisor-port": {
