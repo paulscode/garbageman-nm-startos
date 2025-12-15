@@ -6,9 +6,9 @@
 
 id: garbageman-nm
 title: "Garbageman Nodes Manager"
-version: 0.2.2.0
+version: 0.2.2.1
 release-notes: |
-  Multi-architecture support and stability improvements
+  Added prepare.sh for Start9 Community Registry submission
   
   New features:
   - aarch64 (ARM64) architecture support for Raspberry Pi 5

@@ -135,7 +135,7 @@ FROM node:20-alpine AS runtime
 
 # Build args for wrapper detection and versioning
 ARG WRAPPER_TYPE=standalone
-ARG VERSION=0.2.1.0
+ARG VERSION=0.2.2.1
 
 # Labels for image metadata (using ARG values)
 LABEL org.opencontainers.image.title="Garbageman Nodes Manager"
