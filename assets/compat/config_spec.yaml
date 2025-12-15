@@ -52,9 +52,6 @@ admin-password:
   default:
     charset: "a-z,A-Z,0-9,!@#$%^&*"
     len: 32
-  warning: |
-    Changing the password does not retroactively invalidate existing sessions.
-    For security, restart the service after changing this value.
 
 log-level:
   type: enum
