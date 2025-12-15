@@ -48,9 +48,7 @@ If you want to **install and use** Garbageman on your StartOS device, see the co
 
 **Currently supported:**
 - ✅ x86_64 (Intel/AMD 64-bit)
-
-**Coming in future release:**
-- ⏳ ARM64 (Raspberry Pi, Apple Silicon) - pending upstream artifact availability
+- ✅ ARM64 (Raspberry Pi, Apple Silicon)
 
 ---
 
