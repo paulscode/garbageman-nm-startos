@@ -57,7 +57,6 @@ export const getConfig: T.ExpectedExports.getConfig = compat.getConfig({
     pattern: "[a-zA-Z0-9!@#$%^&*]+",
     "pattern-description": "Must contain letters, numbers, and special characters",
     default: generateRandomPassword(16),
-    warning: "Changing the password does not retroactively invalidate existing sessions. For security, restart the service after changing this value.",
   },
   "log-level": {
     type: "enum",
